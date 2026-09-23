@@ -1,0 +1,67 @@
+/* Контейнер страницы аналитики */
+.analytics {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xl);
+}
+
+/* Заголовок страницы */
+.title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+/* Сетка графиков */
+.chartsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--spacing-lg);
+}
+
+/* Контейнер отдельного графика */
+.chartCard {
+  background-color: var(--color-surface);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Заголовок графика */
+.chartTitle {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--color-text);
+  margin-bottom: var(--spacing-md);
+}
+
+/* Контейнер для содержимого графика */
+.chartContent {
+  min-height: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Заглушка для графика */
+.chartPlaceholder {
+  text-align: center;
+  color: var(--color-text-secondary);
+  padding: var(--spacing-xl);
+}
+
+.chartPlaceholderIcon {
+  font-size: 3rem;
+  margin-bottom: var(--spacing-md);
+}
+
+.chartPlaceholderText {
+  font-size: 1rem;
+}
+
+/* Адаптивная сетка для мобильных */
+@media (max-width: 768px) {
+  .chartsGrid {
+    grid-template-columns: 1fr;
+  }
+}

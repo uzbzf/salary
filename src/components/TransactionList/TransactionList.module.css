@@ -1,0 +1,179 @@
+/* Контейнер таблицы */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+/* Заголовки колонок */
+.thead {
+  background-color: var(--color-bg);
+}
+
+.th {
+  padding: var(--spacing-sm) var(--spacing-md);
+  text-align: left;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid var(--color-border);
+}
+
+/* Строки транзакций */
+.tr {
+  border-bottom: 1px solid var(--color-border);
+  transition: background-color 0.2s;
+}
+
+.tr:hover {
+  background-color: var(--color-bg);
+}
+
+.tr:last-child {
+  border-bottom: none;
+}
+
+/* Ячейки */
+.td {
+  padding: var(--spacing-md);
+  font-size: 0.875rem;
+  color: var(--color-text);
+}
+
+/* Колонка типа операции */
+.typeCell {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+/* Иконка типа операции */
+.typeIcon {
+  width: 2rem;
+  height: 2rem;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+}
+
+.typeIconIncome {
+  background-color: rgba(16, 185, 129, 0.1);
+  color: var(--color-success);
+}
+
+.typeIconExpense {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: var(--color-danger);
+}
+
+/* Колонка категории */
+.categoryCell {
+  font-weight: 500;
+}
+
+/* Колонка суммы */
+.amountCell {
+  font-weight: 600;
+  text-align: right;
+}
+
+.amountIncome {
+  color: var(--color-success);
+}
+
+.amountExpense {
+  color: var(--color-danger);
+}
+
+/* Колонка даты */
+.dateCell {
+  color: var(--color-text-secondary);
+  font-size: 0.875rem;
+}
+
+/* Колонка комментариев */
+.commentCell {
+  color: var(--color-text-secondary);
+  font-size: 0.875rem;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Колонка действий */
+.actionsCell {
+  display: flex;
+  gap: var(--spacing-xs);
+  justify-content: flex-end;
+}
+
+/* Кнопки действий */
+.actionButton {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background-color: transparent;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: var(--color-text-secondary);
+}
+
+.actionButton:hover {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  border-color: var(--color-text-secondary);
+}
+
+.deleteButton {
+  color: var(--color-danger);
+  border-color: var(--color-danger);
+}
+
+.deleteButton:hover {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: var(--color-danger);
+  border-color: var(--color-danger);
+}
+
+/* Адаптивность для мобильных */
+@media (max-width: 768px) {
+  .thead {
+    display: none;
+  }
+
+  .tr {
+    display: flex;
+    flex-direction: column;
+    padding: var(--spacing-md);
+    gap: var(--spacing-sm);
+  }
+
+  .td {
+    padding: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: var(--color-text-secondary);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+  }
+
+  .amountCell {
+    text-align: right;
+  }
+
+  .actionsCell {
+    justify-content: flex-start;
+    margin-top: var(--spacing-sm);
+  }
+}
