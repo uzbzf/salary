@@ -1,27 +1,18 @@
-import React from 'react';
-import styles from './EmptyState.module.css';
+import React from "react";
+import styles from "./EmptyState.module.css";
 
 function EmptyState({
-  icon = '📭',
-  title = 'Ничего не найдено',
-  description = '',
-  actionLabel = '',
+  title = "Нет данных",
+  description = "Добавьте первую запись, чтобы начать работу",
+  actionLabel,
   onAction,
+  icon = "📭",
 }) {
   return (
     <div className={styles.emptyState}>
-      {/* Иконка */}
       <div className={styles.icon}>{icon}</div>
-
-      {/* Заголовок */}
-      <div className={styles.title}>{title}</div>
-
-      {/* Описание (опционально) */}
-      {description && (
-        <div className={styles.description}>{description}</div>
-      )}
-
-      {/* Кнопка действия (опционально) */}
+      <h3 className={styles.title}>{title}</h3>
+      <p className={styles.description}>{description}</p>
       {actionLabel && onAction && (
         <button className={styles.actionButton} onClick={onAction}>
           {actionLabel}

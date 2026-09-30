@@ -1,52 +1,66 @@
 /**
- * Получение данных из localStorage
- * @param {string} key - Ключ хранилища
- * @param {*} defaultValue - Значение по умолчанию, если данные не найдены
- * @returns {*} Распарсенные данные или defaultValue
+ * Обёртка для работы с localStorage
+ * Предоставляет безопасные методы для чтения, записи и удаления данных
  */
-export const getFromStorage = (key, defaultValue = null) => {
+
+/**
+ * Получение данных из localStorage
+ * @param {string} key - Ключ для получения данных
+ * @param {*} defaultValue - Значение по умолчанию, если данные не найдены
+ * @returns {*} Распарсенные данные или значение по умолчанию
+ */
+export const storageGet = (key, defaultValue = null) => {
   try {
     const item = localStorage.getItem(key);
-    
-    if (item === null) {
-      return defaultValue;
-    }
-    
+    if (item === null) return defaultValue;
     return JSON.parse(item);
   } catch (error) {
-    console.error(`Error getting data from storage (key: ${key}):`, error);
+    console.error(`Ошибка при чтении из localStorage (ключ: ${key}):`, error);
     return defaultValue;
   }
 };
 
 /**
  * Сохранение данных в localStorage
- * @param {string} key - Ключ хранилища
- * @param {*} value - Данные для сохранения
+ * @param {string} key - Ключ для сохранения данных
+ * @param {*} value - Данные для сохранения (будут сериализованы в JSON)
  * @returns {boolean} true, если сохранение успешно
  */
-export const saveToStorage = (key, value) => {
+export const storageSet = (key, value) => {
   try {
-    const serialized = JSON.stringify(value);
-    localStorage.setItem(key, serialized);
+    localStorage.setItem(key, JSON.stringify(value));
     return true;
   } catch (error) {
-    console.error(`Error saving data to storage (key: ${key}):`, error);
+    console.error(`Ошибка при записи в localStorage (ключ: ${key}):`, error);
     return false;
   }
 };
 
 /**
  * Удаление данных из localStorage
- * @param {string} key - Ключ хранилища
+ * @param {string} key - Ключ для удаления
  * @returns {boolean} true, если удаление успешно
  */
-export const removeFromStorage = (key) => {
+export const storageRemove = (key) => {
   try {
     localStorage.removeItem(key);
     return true;
   } catch (error) {
-    console.error(`Error removing data from storage (key: ${key}):`, error);
+    console.error(`Ошибка при удалении из localStorage (ключ: ${key}):`, error);
+    return false;
+  }
+};
+
+/**
+ * Очистка всего localStorage
+ * @returns {boolean} true, если очистка успешна
+ */
+export const storageClear = () => {
+  try {
+    localStorage.clear();
+    return true;
+  } catch (error) {
+    console.error('Ошибка при очистке localStorage:', error);
     return false;
   }
 };
@@ -56,35 +70,28 @@ export const removeFromStorage = (key) => {
  * @returns {string} Уникальный идентификатор
  */
 export const generateId = () => {
-  try {
-    // Используем crypto.randomUUID() если доступен
-    if (typeof crypto !== 'undefined' && crypto.randomUUID) {
-      return crypto.randomUUID();
-    }
-    
-    // Fallback: генерация UUID v4 вручную
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-      const r = (Math.random() * 16) | 0;
-      const v = c === 'x' ? r : (r & 0x3) | 0x8;
-      return v.toString(16);
-    });
-  } catch (error) {
-    console.error('Error generating ID:', error);
-    // Последний fallback
-    return Date.now().toString(36) + Math.random().toString(36).substring(2);
+  // Используем crypto.randomUUID() если доступен (современные браузеры)
+  if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+    return crypto.randomUUID();
   }
+
+  // Fallback для старых браузеров
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+    const r = (Math.random() * 16) | 0;
+    const v = c === 'x' ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
 };
 
 /**
- * Очистка всего localStorage (используется для отладки)
- * @returns {boolean} true, если очистка успешна
+ * Получение всех ключей из localStorage
+ * @returns {string[]} Массив ключей
  */
-export const clearStorage = () => {
+export const storageKeys = () => {
   try {
-    localStorage.clear();
-    return true;
+    return Object.keys(localStorage);
   } catch (error) {
-    console.error('Error clearing storage:', error);
-    return false;
+    console.error('Ошибка при получении ключей из localStorage:', error);
+    return [];
   }
 };

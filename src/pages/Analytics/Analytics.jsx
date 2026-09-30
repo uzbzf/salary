@@ -1,68 +1,122 @@
-import React, { useState, useEffect } from 'react';
-import PieChart from '../../components/PieChart/PieChart.jsx';
-import BarChart from '../../components/BarChart/BarChart.jsx';
-import { getByCategory, getMonthlySummary } from '../../services/summaryService.js';
-import styles from './Analytics.module.css';
+import React, { useState, useMemo } from "react";
+import { useData } from "../../context/DataContext";
+import {
+  getByCategory,
+  getMonthlySummary,
+  getBalance,
+} from "../../services/summaryService";
+import { formatAmount } from "../../utils/formatters";
+import PieChart from "../../components/PieChart/PieChart";
+import BarChart from "../../components/BarChart/BarChart";
+import styles from "./Analytics.module.css";
 
 function Analytics() {
-  // Состояние данных для графиков
-  const [categoryData, setCategoryData] = useState([]);
-  const [monthlyData, setMonthlyData] = useState([]);
+  const { incomes, expenses } = useData();
+  const [period, setPeriod] = useState("month");
 
-  // Загрузка данных при монтировании компонента
-  useEffect(() => {
-    loadData();
-  }, []);
+  const periods = [
+    { id: "week", label: "Неделя" },
+    { id: "month", label: "Месяц" },
+    { id: "quarter", label: "Квартал" },
+    { id: "year", label: "Год" },
+  ];
 
-  // Функция загрузки данных
-  const loadData = () => {
-    const categoryStats = getByCategory();
-    const monthlyStats = getMonthlySummary(6);
-    
-    setCategoryData(categoryStats);
-    setMonthlyData(monthlyStats);
-  };
+  // Определяем количество месяцев для графика в зависимости от периода
+  const monthsCount = useMemo(() => {
+    switch (period) {
+      case "week":
+        return 1;
+      case "month":
+        return 1;
+      case "quarter":
+        return 3;
+      case "year":
+        return 12;
+      default:
+        return 6;
+    }
+  }, [period]);
+
+  // Данные для круговой диаграммы (расходы по категориям)
+  const categoryData = useMemo(() => {
+    return getByCategory("expense");
+  }, [expenses]);
+
+  // Данные для столбчатого графика (доходы и расходы по месяцам)
+  const monthlyData = useMemo(() => {
+    return getMonthlySummary(monthsCount);
+  }, [incomes, expenses, monthsCount]);
+
+  // Сводная статистика
+  const { totalIncome, totalExpense, balance } = useMemo(() => {
+    return getBalance();
+  }, [incomes, expenses]);
 
   return (
     <div className={styles.analytics}>
-      {/* Заголовок страницы */}
-      <h1 className={styles.title}>Аналитика</h1>
+      <div className={styles.header}>
+        <h1 className={styles.title}>Аналитика</h1>
+      </div>
 
-      {/* Сетка графиков */}
+      <div className={styles.periodSelector}>
+        {periods.map((p) => (
+          <button
+            key={p.id}
+            className={`${styles.periodButton} ${
+              period === p.id ? styles.periodButtonActive : ""
+            }`}
+            onClick={() => setPeriod(p.id)}
+          >
+            {p.label}
+          </button>
+        ))}
+      </div>
+
       <div className={styles.chartsGrid}>
-        {/* Круговая диаграмма расходов */}
         <div className={styles.chartCard}>
           <h2 className={styles.chartTitle}>Расходы по категориям</h2>
-          <div className={styles.chartContent}>
-            <PieChart data={categoryData} title="Расходы по категориям" />
+          <div className={styles.chartContainer}>
+            <PieChart data={categoryData} />
           </div>
         </div>
 
-        {/* Столбчатый график доходов/расходов */}
         <div className={styles.chartCard}>
           <h2 className={styles.chartTitle}>Доходы и расходы по месяцам</h2>
-          <div className={styles.chartContent}>
-            <BarChart data={monthlyData} title="Доходы и расходы по месяцам" />
+          <div className={styles.chartContainer}>
+            <BarChart data={monthlyData} />
           </div>
         </div>
       </div>
 
-      {/* Информационное сообщение */}
-      {categoryData.length === 0 && monthlyData.every((m) => m.income === 0 && m.expense === 0) && (
-        <div style={{
-          backgroundColor: 'var(--color-surface)',
-          borderRadius: 'var(--radius-lg)',
-          padding: 'var(--spacing-lg)',
-          boxShadow: 'var(--shadow-sm)',
-          textAlign: 'center',
-          color: 'var(--color-text-secondary)',
-        }}>
-          <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>💡</div>
-          <div style={{ fontSize: '1rem' }}>
-            Добавьте операции, чтобы увидеть графики
+      <div className={styles.summarySection}>
+        <h2 className={styles.summaryTitle}>Сводка за период</h2>
+        <div className={styles.summaryGrid}>
+          <div className={styles.summaryItem}>
+            <span className={styles.summaryLabel}>Общие доходы</span>
+            <span
+              className={`${styles.summaryValue} ${styles.summaryValueIncome}`}
+            >
+              {formatAmount(totalIncome)}
+            </span>
+          </div>
+          <div className={styles.summaryItem}>
+            <span className={styles.summaryLabel}>Общие расходы</span>
+            <span
+              className={`${styles.summaryValue} ${styles.summaryValueExpense}`}
+            >
+              {formatAmount(totalExpense)}
+            </span>
+          </div>
+          <div className={styles.summaryItem}>
+            <span className={styles.summaryLabel}>Баланс</span>
+            <span
+              className={`${styles.summaryValue} ${styles.summaryValueBalance}`}
+            >
+              {formatAmount(balance)}
+            </span>
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }

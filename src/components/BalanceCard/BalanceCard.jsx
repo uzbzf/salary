@@ -1,33 +1,22 @@
-import React from 'react';
-import styles from './BalanceCard.module.css';
+import React from "react";
+import styles from "./BalanceCard.module.css";
 
-// Маппинг цветов на CSS-классы
-const COLOR_MAP = {
-  success: styles.success,
-  danger: styles.danger,
-  primary: styles.primary,
-  warning: styles.warning,
-};
-
-function BalanceCard({ title, amount, color = 'primary' }) {
-  // Fallback для amount
-  const displayAmount = amount ?? 0;
-  
+function BalanceCard({ title, amount, color = "balance" }) {
   // Форматирование суммы с разделителями тысяч
-  const formattedAmount = new Intl.NumberFormat('ru-RU', {
-    style: 'currency',
-    currency: 'RUB',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(displayAmount);
+  const formattedAmount = new Intl.NumberFormat("ru-RU").format(amount ?? 0);
 
-  // Получаем CSS-класс для цвета
-  const colorClass = COLOR_MAP[color] || styles.primary;
+  // Выбор класса в зависимости от типа карточки
+  const colorClass =
+    color === "income"
+      ? styles.cardIncome
+      : color === "expense"
+        ? styles.cardExpense
+        : styles.cardBalance;
 
   return (
     <div className={`${styles.card} ${colorClass}`}>
-      <div className={styles.title}>{title}</div>
-      <div className={styles.amount}>{formattedAmount}</div>
+      <p className={styles.title}>{title}</p>
+      <p className={styles.amount}>{formattedAmount} ₽</p>
     </div>
   );
 }

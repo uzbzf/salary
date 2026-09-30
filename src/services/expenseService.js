@@ -1,102 +1,104 @@
-import { getFromStorage, saveToStorage, generateId } from './storage.js';
-import { STORAGE_KEYS } from '../utils/constants.js';
+import { storageGet, storageSet, generateId } from './storage';
+import { STORAGE_KEYS } from '../utils/constants';
+
+/**
+ * Сервис для работы с расходами
+ * Предоставляет CRUD-операции для управления расходами в localStorage
+ */
 
 /**
  * Получение всех расходов
- * @returns {Array} Массив расходов
+ * @returns {Array} Массив всех расходов
  */
 export const getExpenses = () => {
-  const expenses = getFromStorage(STORAGE_KEYS.EXPENSES, []);
-  // Сортировка по дате (новые сверху)
-  return (expenses || []).sort((a, b) => new Date(b.date) - new Date(a.date));
+  return storageGet(STORAGE_KEYS.EXPENSES, []);
 };
 
 /**
  * Получение расхода по ID
- * @param {string} id - ID расхода
- * @returns {Object|null} Объект расхода или null
+ * @param {string} id - Идентификатор расхода
+ * @returns {Object|null} Объект расхода или null, если не найден
  */
 export const getExpenseById = (id) => {
-  if (!id) return null;
-  
-  const expenses = getFromStorage(STORAGE_KEYS.EXPENSES, []);
-  return (expenses || []).find((item) => item.id === id) || null;
+  const expenses = getExpenses();
+  return expenses.find((expense) => expense.id === id) || null;
 };
 
 /**
  * Добавление нового расхода
- * @param {Object} data - Данные расхода (category, amount, date, comment)
- * @returns {Object} Созданный объект расхода
+ * @param {Object} expenseData - Данные расхода (без id)
+ * @param {string} expenseData.category - ID категории
+ * @param {number} expenseData.amount - Сумма
+ * @param {string} expenseData.date - Дата в формате ISO
+ * @param {string} expenseData.comment - Комментарий
+ * @returns {Object} Созданный объект расхода с id
  */
-export const addExpense = (data) => {
-  const expenses = getFromStorage(STORAGE_KEYS.EXPENSES, []);
-  
+export const addExpense = (expenseData) => {
+  const expenses = getExpenses();
+
   const newExpense = {
     id: generateId(),
     type: 'expense',
-    category: data?.category || 'other',
-    amount: data?.amount ?? 0,
-    date: data?.date || new Date().toISOString().split('T')[0],
-    comment: data?.comment || '',
-    createdAt: new Date().toISOString(),
+    category: expenseData.category,
+    amount: Number(expenseData.amount),
+    date: expenseData.date,
+    comment: expenseData.comment || '',
   };
-  
-  const updatedExpenses = [...(expenses || []), newExpense];
-  saveToStorage(STORAGE_KEYS.EXPENSES, updatedExpenses);
-  
+
+  expenses.push(newExpense);
+  storageSet(STORAGE_KEYS.EXPENSES, expenses);
+
   return newExpense;
 };
 
 /**
  * Обновление существующего расхода
- * @param {string} id - ID расхода
- * @param {Object} data - Обновлённые данные
- * @returns {Object|null} Обновлённый объект расхода или null
+ * @param {string} id - Идентификатор расхода для обновления
+ * @param {Object} expenseData - Новые данные расхода
+ * @returns {Object|null} Обновлённый объект расхода или null, если не найден
  */
-export const updateExpense = (id, data) => {
-  if (!id) return null;
-  
-  const expenses = getFromStorage(STORAGE_KEYS.EXPENSES, []);
-  const safeExpenses = expenses || [];
-  
-  const index = safeExpenses.findIndex((item) => item.id === id);
-  
+export const updateExpense = (id, expenseData) => {
+  const expenses = getExpenses();
+  const index = expenses.findIndex((expense) => expense.id === id);
+
   if (index === -1) return null;
-  
+
   const updatedExpense = {
-    ...safeExpenses[index],
-    category: data?.category ?? safeExpenses[index].category,
-    amount: data?.amount ?? safeExpenses[index].amount,
-    date: data?.date ?? safeExpenses[index].date,
-    comment: data?.comment ?? safeExpenses[index].comment,
-    updatedAt: new Date().toISOString(),
+    ...expenses[index],
+    category: expenseData.category,
+    amount: Number(expenseData.amount),
+    date: expenseData.date,
+    comment: expenseData.comment || '',
   };
-  
-  const updatedExpenses = [...safeExpenses];
-  updatedExpenses[index] = updatedExpense;
-  
-  saveToStorage(STORAGE_KEYS.EXPENSES, updatedExpenses);
-  
+
+  expenses[index] = updatedExpense;
+  storageSet(STORAGE_KEYS.EXPENSES, expenses);
+
   return updatedExpense;
 };
 
 /**
  * Удаление расхода
- * @param {string} id - ID расхода
+ * @param {string} id - Идентификатор расхода для удаления
  * @returns {boolean} true, если удаление успешно
  */
 export const deleteExpense = (id) => {
-  if (!id) return false;
-  
-  const expenses = getFromStorage(STORAGE_KEYS.EXPENSES, []);
-  const safeExpenses = expenses || [];
-  
-  const filtered = safeExpenses.filter((item) => item.id !== id);
-  
-  // Если ничего не удалилось — ID не найден
-  if (filtered.length === safeExpenses.length) return false;
-  
-  saveToStorage(STORAGE_KEYS.EXPENSES, filtered);
-  
+  const expenses = getExpenses();
+  const filteredExpenses = expenses.filter((expense) => expense.id !== id);
+
+  if (filteredExpenses.length === expenses.length) {
+    return false; // Расход не найден
+  }
+
+  storageSet(STORAGE_KEYS.EXPENSES, filteredExpenses);
+  return true;
+};
+
+/**
+ * Удаление всех расходов
+ * @returns {boolean} true, если очистка успешна
+ */
+export const clearAllExpenses = () => {
+  storageSet(STORAGE_KEYS.EXPENSES, []);
   return true;
 };

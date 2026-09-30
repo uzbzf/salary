@@ -1,102 +1,104 @@
-import { getFromStorage, saveToStorage, generateId } from './storage.js';
-import { STORAGE_KEYS } from '../utils/constants.js';
+import { storageGet, storageSet, generateId } from './storage';
+import { STORAGE_KEYS } from '../utils/constants';
+
+/**
+ * Сервис для работы с доходами
+ * Предоставляет CRUD-операции для управления доходами в localStorage
+ */
 
 /**
  * Получение всех доходов
- * @returns {Array} Массив доходов
+ * @returns {Array} Массив всех доходов
  */
 export const getIncomes = () => {
-  const incomes = getFromStorage(STORAGE_KEYS.INCOMES, []);
-  // Сортировка по дате (новые сверху)
-  return (incomes || []).sort((a, b) => new Date(b.date) - new Date(a.date));
+  return storageGet(STORAGE_KEYS.INCOMES, []);
 };
 
 /**
  * Получение дохода по ID
- * @param {string} id - ID дохода
- * @returns {Object|null} Объект дохода или null
+ * @param {string} id - Идентификатор дохода
+ * @returns {Object|null} Объект дохода или null, если не найден
  */
 export const getIncomeById = (id) => {
-  if (!id) return null;
-  
-  const incomes = getFromStorage(STORAGE_KEYS.INCOMES, []);
-  return (incomes || []).find((item) => item.id === id) || null;
+  const incomes = getIncomes();
+  return incomes.find((income) => income.id === id) || null;
 };
 
 /**
  * Добавление нового дохода
- * @param {Object} data - Данные дохода (category, amount, date, comment)
- * @returns {Object} Созданный объект дохода
+ * @param {Object} incomeData - Данные дохода (без id)
+ * @param {string} incomeData.category - ID категории
+ * @param {number} incomeData.amount - Сумма
+ * @param {string} incomeData.date - Дата в формате ISO
+ * @param {string} incomeData.comment - Комментарий
+ * @returns {Object} Созданный объект дохода с id
  */
-export const addIncome = (data) => {
-  const incomes = getFromStorage(STORAGE_KEYS.INCOMES, []);
-  
+export const addIncome = (incomeData) => {
+  const incomes = getIncomes();
+
   const newIncome = {
     id: generateId(),
     type: 'income',
-    category: data?.category || 'other',
-    amount: data?.amount ?? 0,
-    date: data?.date || new Date().toISOString().split('T')[0],
-    comment: data?.comment || '',
-    createdAt: new Date().toISOString(),
+    category: incomeData.category,
+    amount: Number(incomeData.amount),
+    date: incomeData.date,
+    comment: incomeData.comment || '',
   };
-  
-  const updatedIncomes = [...(incomes || []), newIncome];
-  saveToStorage(STORAGE_KEYS.INCOMES, updatedIncomes);
-  
+
+  incomes.push(newIncome);
+  storageSet(STORAGE_KEYS.INCOMES, incomes);
+
   return newIncome;
 };
 
 /**
  * Обновление существующего дохода
- * @param {string} id - ID дохода
- * @param {Object} data - Обновлённые данные
- * @returns {Object|null} Обновлённый объект дохода или null
+ * @param {string} id - Идентификатор дохода для обновления
+ * @param {Object} incomeData - Новые данные дохода
+ * @returns {Object|null} Обновлённый объект дохода или null, если не найден
  */
-export const updateIncome = (id, data) => {
-  if (!id) return null;
-  
-  const incomes = getFromStorage(STORAGE_KEYS.INCOMES, []);
-  const safeIncomes = incomes || [];
-  
-  const index = safeIncomes.findIndex((item) => item.id === id);
-  
+export const updateIncome = (id, incomeData) => {
+  const incomes = getIncomes();
+  const index = incomes.findIndex((income) => income.id === id);
+
   if (index === -1) return null;
-  
+
   const updatedIncome = {
-    ...safeIncomes[index],
-    category: data?.category ?? safeIncomes[index].category,
-    amount: data?.amount ?? safeIncomes[index].amount,
-    date: data?.date ?? safeIncomes[index].date,
-    comment: data?.comment ?? safeIncomes[index].comment,
-    updatedAt: new Date().toISOString(),
+    ...incomes[index],
+    category: incomeData.category,
+    amount: Number(incomeData.amount),
+    date: incomeData.date,
+    comment: incomeData.comment || '',
   };
-  
-  const updatedIncomes = [...safeIncomes];
-  updatedIncomes[index] = updatedIncome;
-  
-  saveToStorage(STORAGE_KEYS.INCOMES, updatedIncomes);
-  
+
+  incomes[index] = updatedIncome;
+  storageSet(STORAGE_KEYS.INCOMES, incomes);
+
   return updatedIncome;
 };
 
 /**
  * Удаление дохода
- * @param {string} id - ID дохода
+ * @param {string} id - Идентификатор дохода для удаления
  * @returns {boolean} true, если удаление успешно
  */
 export const deleteIncome = (id) => {
-  if (!id) return false;
-  
-  const incomes = getFromStorage(STORAGE_KEYS.INCOMES, []);
-  const safeIncomes = incomes || [];
-  
-  const filtered = safeIncomes.filter((item) => item.id !== id);
-  
-  // Если ничего не удалилось — ID не найден
-  if (filtered.length === safeIncomes.length) return false;
-  
-  saveToStorage(STORAGE_KEYS.INCOMES, filtered);
-  
+  const incomes = getIncomes();
+  const filteredIncomes = incomes.filter((income) => income.id !== id);
+
+  if (filteredIncomes.length === incomes.length) {
+    return false; // Доход не найден
+  }
+
+  storageSet(STORAGE_KEYS.INCOMES, filteredIncomes);
+  return true;
+};
+
+/**
+ * Удаление всех доходов
+ * @returns {boolean} true, если очистка успешна
+ */
+export const clearAllIncomes = () => {
+  storageSet(STORAGE_KEYS.INCOMES, []);
   return true;
 };

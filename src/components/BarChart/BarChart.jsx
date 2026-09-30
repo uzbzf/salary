@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   BarChart as RechartsBarChart,
   Bar,
@@ -8,34 +8,77 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
-} from 'recharts';
+} from "recharts";
+
+// Заглушка для пустых данных
+const EmptyChart = () => (
+  <div
+    style={{
+      width: "100%",
+      height: "100%",
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
+      color: "var(--color-text-muted)",
+      textAlign: "center",
+      padding: "var(--spacing-xl)",
+    }}
+  >
+    <div style={{ fontSize: "48px", marginBottom: "var(--spacing-md)" }}>
+      📈
+    </div>
+    <p style={{ fontSize: "var(--font-size-md)", fontWeight: 500 }}>
+      Нет данных для отображения
+    </p>
+    <p
+      style={{
+        fontSize: "var(--font-size-sm)",
+        marginTop: "var(--spacing-xs)",
+      }}
+    >
+      Добавьте операции, чтобы увидеть график
+    </p>
+  </div>
+);
 
 // Кастомный tooltip
 const CustomTooltip = ({ active, payload, label }) => {
   if (active && payload && payload.length) {
     return (
-      <div style={{
-        backgroundColor: 'var(--color-surface)',
-        padding: '0.75rem 1rem',
-        borderRadius: 'var(--radius-md)',
-        boxShadow: 'var(--shadow-md)',
-        border: '1px solid var(--color-border)',
-      }}>
-        <div style={{ fontWeight: 600, marginBottom: '0.5rem' }}>
+      <div
+        style={{
+          backgroundColor: "var(--color-surface)",
+          padding: "var(--spacing-md)",
+          borderRadius: "var(--radius-md)",
+          boxShadow: "var(--shadow-md)",
+          border: "1px solid var(--color-border)",
+        }}
+      >
+        <p
+          style={{
+            fontWeight: 600,
+            color: "var(--color-text)",
+            marginBottom: "var(--spacing-xs)",
+          }}
+        >
           {label}
-        </div>
-        {payload.map((entry, index) => {
-          const amount = new Intl.NumberFormat('ru-RU', {
-            style: 'currency',
-            currency: 'RUB',
-            minimumFractionDigits: 0,
-            maximumFractionDigits: 0,
-          }).format(entry.value);
-
+        </p>
+        {(payload || []).map((entry, index) => {
+          const formattedValue = new Intl.NumberFormat("ru-RU").format(
+            entry.value,
+          );
           return (
-            <div key={index} style={{ color: entry.color, fontSize: '0.875rem' }}>
-              {entry.name}: {amount}
-            </div>
+            <p
+              key={index}
+              style={{
+                color: entry.color,
+                fontSize: "var(--font-size-sm)",
+                margin: "var(--spacing-xs) 0",
+              }}
+            >
+              {entry.name}: {formattedValue} ₽
+            </p>
           );
         })}
       </div>
@@ -44,71 +87,46 @@ const CustomTooltip = ({ active, payload, label }) => {
   return null;
 };
 
-function BarChartComponent({ data, title }) {
-  // Fallback для пустых данных
-  const safeData = data || [];
-
+function BarChart({ data = [], title }) {
   // Если данных нет — показываем заглушку
-  if (safeData.length === 0) {
-    return (
-      <div style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        minHeight: '300px',
-        color: 'var(--color-text-secondary)',
-        textAlign: 'center',
-        padding: 'var(--spacing-xl)',
-      }}>
-        <div style={{ fontSize: '3rem', marginBottom: 'var(--spacing-md)' }}>📊</div>
-        <div style={{ fontSize: '1rem' }}>
-          Нет данных для отображения
-        </div>
-      </div>
-    );
+  if (!data || data.length === 0) {
+    return <EmptyChart />;
   }
 
   return (
-    <div style={{ width: '100%', height: '300px' }}>
-      <ResponsiveContainer width="100%" height="100%">
-        <RechartsBarChart
-          data={safeData}
-          margin={{
-            top: 20,
-            right: 30,
-            left: 20,
-            bottom: 5,
-          }}
-        >
-          <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
-          <XAxis
-            dataKey="month"
-            stroke="var(--color-text-secondary)"
-            style={{ fontSize: '0.875rem' }}
-          />
-          <YAxis
-            stroke="var(--color-text-secondary)"
-            style={{ fontSize: '0.875rem' }}
-          />
-          <Tooltip content={<CustomTooltip />} />
-          <Legend />
-          <Bar
-            dataKey="income"
-            name="Доходы"
-            fill="var(--color-success)"
-            radius={[8, 8, 0, 0]}
-          />
-          <Bar
-            dataKey="expense"
-            name="Расходы"
-            fill="var(--color-danger)"
-            radius={[8, 8, 0, 0]}
-          />
-        </RechartsBarChart>
-      </ResponsiveContainer>
-    </div>
+    <ResponsiveContainer width="100%" height="100%">
+      <RechartsBarChart data={data}>
+        <CartesianGrid strokeDasharray="3 3" stroke="var(--color-border)" />
+        <XAxis
+          dataKey="month"
+          stroke="var(--color-text-muted)"
+          style={{ fontSize: "var(--font-size-sm)" }}
+        />
+        <YAxis
+          stroke="var(--color-text-muted)"
+          style={{ fontSize: "var(--font-size-sm)" }}
+        />
+        <Tooltip content={<CustomTooltip />} />
+        <Legend
+          verticalAlign="top"
+          height={36}
+          wrapperStyle={{ fontSize: "var(--font-size-sm)" }}
+        />
+        <Bar
+          dataKey="income"
+          name="Доходы"
+          fill="var(--color-income)"
+          radius={[8, 8, 0, 0]}
+        />
+        <Bar
+          dataKey="expense"
+          name="Расходы"
+          fill="var(--color-expense)"
+          radius={[8, 8, 0, 0]}
+        />
+      </RechartsBarChart>
+    </ResponsiveContainer>
   );
 }
 
-export default BarChartComponent;
+export default BarChart;

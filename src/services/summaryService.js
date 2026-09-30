@@ -1,20 +1,24 @@
-import { getIncomes } from './incomeService.js';
-import { getExpenses } from './expenseService.js';
-import { INCOME_CATEGORIES, EXPENSE_CATEGORIES } from '../utils/constants.js';
-import { getMonthKey } from '../utils/formatters.js';
+import { getIncomes } from './incomeService';
+import { getExpenses } from './expenseService';
+import { INCOME_CATEGORIES, EXPENSE_CATEGORIES } from '../utils/constants';
 
 /**
- * Вычисление общего баланса (доходы - расходы)
- * @returns {Object} Объект с totalIncome, totalExpense, balance
+ * Сервис для агрегации и анализа финансовых данных
+ * Предоставляет функции для получения сводной информации, статистики по категориям и периодам
+ */
+
+/**
+ * Получение общего баланса (доходы минус расходы)
+ * @returns {Object} Объект с общей суммой доходов, расходов и балансом
  */
 export const getBalance = () => {
   const incomes = getIncomes();
   const expenses = getExpenses();
-  
-  const totalIncome = (incomes || []).reduce((sum, item) => sum + (item.amount ?? 0), 0);
-  const totalExpense = (expenses || []).reduce((sum, item) => sum + (item.amount ?? 0), 0);
+
+  const totalIncome = incomes.reduce((sum, income) => sum + (income.amount || 0), 0);
+  const totalExpense = expenses.reduce((sum, expense) => sum + (expense.amount || 0), 0);
   const balance = totalIncome - totalExpense;
-  
+
   return {
     totalIncome,
     totalExpense,
@@ -23,128 +27,137 @@ export const getBalance = () => {
 };
 
 /**
- * Группировка расходов по категориям для круговой диаграммы
- * @returns {Array} Массив объектов { name, value } для PieChart
+ * Получение сумм по категориям для круговой диаграммы
+ * @param {string} type - Тип операции ('income' или 'expense')
+ * @returns {Array} Массив объектов для графика [{ name: 'Категория', value: 1000 }, ...]
  */
-export const getByCategory = () => {
-  const expenses = getExpenses();
-  const safeExpenses = expenses || [];
-  
-  // Группировка по категориям
-  const categoryMap = {};
-  
-  safeExpenses.forEach((expense) => {
-    const categoryId = expense.category || 'other';
-    const amount = expense.amount ?? 0;
-    
-    if (!categoryMap[categoryId]) {
-      categoryMap[categoryId] = 0;
+export const getByCategory = (type = 'expense') => {
+  const transactions = type === 'income' ? getIncomes() : getExpenses();
+  const categories = type === 'income' ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
+
+  // Группируем суммы по категориям
+  const categorySums = {};
+  (transactions || []).forEach((transaction) => {
+    const categoryId = transaction.category;
+    if (!categorySums[categoryId]) {
+      categorySums[categoryId] = 0;
     }
-    
-    categoryMap[categoryId] += amount;
+    categorySums[categoryId] += transaction.amount || 0;
   });
-  
-  // Преобразование в формат для графика
-  const result = Object.entries(categoryMap).map(([categoryId, value]) => {
-    const category = EXPENSE_CATEGORIES.find((cat) => cat.id === categoryId);
-    const name = category?.label || 'Прочее';
-    
-    return {
-      name,
-      value,
-      categoryId,
-    };
-  });
-  
-  // Сортировка по убыванию суммы
-  return result.sort((a, b) => b.value - a.value);
+
+  // Преобразуем в формат для графика
+  return categories
+    .map((category) => ({
+      name: category.label,
+      value: categorySums[category.id] || 0,
+    }))
+    .filter((item) => item.value > 0)
+    .sort((a, b) => b.value - a.value);
 };
 
 /**
- * Группировка доходов и расходов по месяцам для столбчатого графика
+ * Получение помесячной сводки для столбчатого графика
  * @param {number} monthsCount - Количество месяцев для отображения (по умолчанию 6)
- * @returns {Array} Массив объектов { month, income, expense } для BarChart
+ * @returns {Array} Массив объектов для графика [{ month: 'Янв', income: 50000, expense: 30000 }, ...]
  */
 export const getMonthlySummary = (monthsCount = 6) => {
   const incomes = getIncomes();
   const expenses = getExpenses();
-  
-  const safeIncomes = incomes || [];
-  const safeExpenses = expenses || [];
-  
-  // Получаем текущую дату
+
+  // Создаём массив последних N месяцев
+  const months = [];
   const now = new Date();
-  
-  // Создаём массив ключей месяцев (например, ["2026-09", "2026-08", ...])
-  const monthKeys = [];
+
   for (let i = monthsCount - 1; i >= 0; i--) {
     const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    monthKeys.push(getMonthKey(date));
-  }
-  
-  // Инициализация структуры данных
-  const monthlyData = {};
-  monthKeys.forEach((key) => {
-    monthlyData[key] = {
+    const year = date.getFullYear();
+    const month = date.getMonth();
+
+    months.push({
+      year,
+      month,
+      label: date.toLocaleDateString('ru-RU', { month: 'short' }),
       income: 0,
       expense: 0,
-    };
-  });
-  
-  // Подсчёт доходов по месяцам
-  safeIncomes.forEach((income) => {
-    const monthKey = getMonthKey(income.date);
-    if (monthlyData[monthKey]) {
-      monthlyData[monthKey].income += income.amount ?? 0;
-    }
-  });
-  
-  // Подсчёт расходов по месяцам
-  safeExpenses.forEach((expense) => {
-    const monthKey = getMonthKey(expense.date);
-    if (monthlyData[monthKey]) {
-      monthlyData[monthKey].expense += expense.amount ?? 0;
-    }
-  });
-  
-  // Преобразование в формат для графика
-  const result = monthKeys.map((key) => {
-    // Извлекаем месяц и год из ключа (например, "2026-09" -> "Сен 2026")
-    const [year, month] = key.split('-');
-    const date = new Date(parseInt(year), parseInt(month) - 1, 1);
-    const monthLabel = date.toLocaleDateString('ru-RU', {
-      month: 'short',
-      year: 'numeric',
     });
-    
-    return {
-      month: monthLabel,
-      income: monthlyData[key].income,
-      expense: monthlyData[key].expense,
-    };
+  }
+
+  // Суммируем доходы по месяцам
+  (incomes || []).forEach((income) => {
+    const date = new Date(income.date);
+    const year = date.getFullYear();
+    const month = date.getMonth();
+
+    const monthData = months.find((m) => m.year === year && m.month === month);
+    if (monthData) {
+      monthData.income += income.amount || 0;
+    }
   });
-  
-  return result;
+
+  // Суммируем расходы по месяцам
+  (expenses || []).forEach((expense) => {
+    const date = new Date(expense.date);
+    const year = date.getFullYear();
+    const month = date.getMonth();
+
+    const monthData = months.find((m) => m.year === year && m.month === month);
+    if (monthData) {
+      monthData.expense += expense.amount || 0;
+    }
+  });
+
+  // Возвращаем в формате для графика
+  return months.map((m) => ({
+    month: m.label,
+    income: m.income,
+    expense: m.expense,
+  }));
 };
 
 /**
- * Получение последних операций (доходы + расходы, отсортированные по дате)
- * @param {number} limit - Количество операций (по умолчанию 5)
- * @returns {Array} Массив последних операций
+ * Получение последних транзакций (доходы + расходы)
+ * @param {number} limit - Количество транзакций (по умолчанию 5)
+ * @returns {Array} Массив последних транзакций, отсортированных по дате
  */
 export const getRecentTransactions = (limit = 5) => {
   const incomes = getIncomes();
   const expenses = getExpenses();
-  
-  const safeIncomes = incomes || [];
-  const safeExpenses = expenses || [];
-  
-  // Объединяем все операции
-  const allTransactions = [...safeIncomes, ...safeExpenses];
-  
-  // Сортировка по дате (новые сверху)
-  allTransactions.sort((a, b) => new Date(b.date) - new Date(a.date));
-  
-  // Возвращаем первые N операций
-  return allTransactions.slice(0, limit);
+
+  // Объединяем и сортируем по дате (новые первые)
+  const allTransactions = [...incomes, ...expenses]
+    .sort((a, b) => new Date(b.date) - new Date(a.date))
+    .slice(0, limit);
+
+  return allTransactions;
+};
+
+/**
+ * Получение всех транзакций с фильтрацией
+ * @param {Object} filters - Объект фильтров
+ * @param {string} filters.type - Тип операции ('all', 'income', 'expense')
+ * @param {string} filters.category - ID категории ('all' или конкретный ID)
+ * @returns {Array} Отфильтрованный массив транзакций
+ */
+export const getFilteredTransactions = (filters = {}) => {
+  const incomes = getIncomes();
+  const expenses = getExpenses();
+
+  let transactions = [];
+
+  // Фильтрация по типу
+  if (filters.type === 'income') {
+    transactions = incomes;
+  } else if (filters.type === 'expense') {
+    transactions = expenses;
+  } else {
+    transactions = [...incomes, ...expenses];
+  }
+
+  // Фильтрация по категории
+  if (filters.category && filters.category !== 'all') {
+    transactions = transactions.filter((t) => t.category === filters.category);
+  }
+
+  // Сортировка по дате (новые первые)
+  return transactions.sort((a, b) => new Date(b.date) - new Date(a.date));
 };

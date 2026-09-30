@@ -1,84 +1,74 @@
-/* Контейнер формы */
+/* Стили формы транзакции */
 .form {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-lg);
 }
 
-/* Переключатель типа операции */
-.typeSwitcher {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: var(--spacing-sm);
-  padding: var(--spacing-xs);
-  background-color: var(--color-bg);
-  border-radius: var(--radius-md);
-}
-
-.typeButton {
-  padding: var(--spacing-sm) var(--spacing-md);
-  background-color: transparent;
-  border: none;
-  border-radius: var(--radius-sm);
-  font-size: 0.875rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-  color: var(--color-text-secondary);
-}
-
-.typeButton:hover {
-  background-color: var(--color-surface);
-}
-
-.typeButtonActive {
-  background-color: var(--color-surface);
-  color: var(--color-text);
-  box-shadow: var(--shadow-sm);
-}
-
-.typeButtonIncome {
-  color: var(--color-success);
-}
-
-.typeButtonIncome.typeButtonActive {
-  color: var(--color-success);
-}
-
-.typeButtonExpense {
-  color: var(--color-danger);
-}
-
-.typeButtonExpense.typeButtonActive {
-  color: var(--color-danger);
-}
-
-/* Группа полей формы */
+/* Группа полей */
 .fieldGroup {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-xs);
 }
 
-/* Метка поля */
 .label {
-  font-size: 0.875rem;
+  font-size: var(--font-size-sm);
   font-weight: 500;
   color: var(--color-text);
 }
 
-/* Поле ввода */
+/* Переключатель типа операции */
+.typeSelector {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-sm);
+}
+
+.typeButton {
+  padding: var(--spacing-md);
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  transition: all 0.2s ease;
+  border: 2px solid var(--color-border);
+  background-color: var(--color-surface);
+  color: var(--color-text-muted);
+}
+
+.typeButton:hover {
+  border-color: var(--color-primary);
+  background-color: var(--color-primary-light);
+}
+
+.typeButtonIncomeActive {
+  border-color: var(--color-income);
+  background-color: var(--color-income-light);
+  color: var(--color-income);
+}
+
+.typeButtonExpenseActive {
+  border-color: var(--color-expense);
+  background-color: var(--color-expense-light);
+  color: var(--color-expense);
+}
+
+/* Поля ввода */
 .input,
 .select,
 .textarea {
-  padding: var(--spacing-sm) var(--spacing-md);
+  padding: var(--spacing-md);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
-  font-size: 0.875rem;
   background-color: var(--color-surface);
   color: var(--color-text);
-  transition: border-color 0.2s;
-  font-family: inherit;
+  font-size: var(--font-size-md);
+  transition: all 0.2s ease;
+}
+
+.input:hover,
+.select:hover,
+.textarea:hover {
+  border-color: var(--color-primary);
 }
 
 .input:focus,
@@ -86,87 +76,75 @@
 .textarea:focus {
   outline: none;
   border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-light);
 }
 
-.input:invalid,
-.select:invalid,
-.textarea:invalid {
-  border-color: var(--color-danger);
-}
-
-/* Textarea для комментария */
 .textarea {
   resize: vertical;
   min-height: 80px;
   font-family: inherit;
 }
 
-/* Grid для полей суммы и даты */
-.row {
+/* Grid для полей */
+.grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: var(--spacing-md);
 }
 
-/* Ошибка валидации */
-.error {
-  font-size: 0.75rem;
-  color: var(--color-danger);
-  margin-top: var(--spacing-xs);
-}
-
-/* Контейнер кнопок */
+/* Кнопки действий */
 .actions {
   display: flex;
-  gap: var(--spacing-sm);
+  gap: var(--spacing-md);
   justify-content: flex-end;
-  padding-top: var(--spacing-md);
-  border-top: 1px solid var(--color-border);
+  margin-top: var(--spacing-md);
 }
 
-/* Кнопка отмены */
-.cancelButton {
-  padding: var(--spacing-sm) var(--spacing-lg);
-  background-color: transparent;
-  color: var(--color-text-secondary);
-  border: 1px solid var(--color-border);
+.button {
+  padding: var(--spacing-md) var(--spacing-xl);
   border-radius: var(--radius-md);
-  font-size: 0.875rem;
-  font-weight: 500;
+  font-weight: 600;
+  transition: all 0.2s ease;
   cursor: pointer;
-  transition: all 0.2s;
 }
 
-.cancelButton:hover {
+.buttonPrimary {
+  background-color: var(--color-primary);
+  color: white;
+  box-shadow: var(--shadow-sm);
+}
+
+.buttonPrimary:hover {
+  background-color: var(--color-primary-hover);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+
+.buttonPrimary:active {
+  transform: translateY(0);
+}
+
+.buttonSecondary {
   background-color: var(--color-bg);
   color: var(--color-text);
+  border: 1px solid var(--color-border);
 }
 
-/* Кнопка сохранения */
-.submitButton {
-  padding: var(--spacing-sm) var(--spacing-lg);
-  background-color: var(--color-primary);
-  color: #ffffff;
-  border: none;
-  border-radius: var(--radius-md);
-  font-size: 0.875rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background-color 0.2s;
+.buttonSecondary:hover {
+  background-color: var(--color-border);
 }
 
-.submitButton:hover {
-  background-color: var(--color-primary-hover);
-}
-
-.submitButton:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-/* Адаптивность для мобильных */
-@media (max-width: 768px) {
-  .row {
+/* Адаптивность для мобильных устройств */
+@media (max-width: 640px) {
+  .grid {
     grid-template-columns: 1fr;
+  }
+
+  .actions {
+    flex-direction: column-reverse;
+  }
+
+  .button {
+    width: 100%;
   }
 }

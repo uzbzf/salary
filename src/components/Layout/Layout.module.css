@@ -1,20 +1,20 @@
-/* Основной контейнер layout */
+/* Стили layout */
 .layout {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  background-color: var(--color-bg);
 }
 
-/* Контейнер для основного контента */
 .main {
   flex: 1;
-  max-width: 1200px;
-  width: 100%;
+  max-width: var(--container-max-width);
   margin: 0 auto;
-  padding: var(--spacing-xl);
+  padding: var(--spacing-lg);
+  width: 100%;
 }
 
-/* Адаптивные отступы для мобильных */
+/* Адаптивность для мобильных устройств */
 @media (max-width: 768px) {
   .main {
     padding: var(--spacing-md);

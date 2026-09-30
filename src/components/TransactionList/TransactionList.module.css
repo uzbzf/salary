@@ -1,179 +1,165 @@
-/* Контейнер таблицы */
-.table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-/* Заголовки колонок */
-.thead {
-  background-color: var(--color-bg);
-}
-
-.th {
-  padding: var(--spacing-sm) var(--spacing-md);
-  text-align: left;
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--color-text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  border-bottom: 1px solid var(--color-border);
-}
-
-/* Строки транзакций */
-.tr {
-  border-bottom: 1px solid var(--color-border);
-  transition: background-color 0.2s;
-}
-
-.tr:hover {
-  background-color: var(--color-bg);
-}
-
-.tr:last-child {
-  border-bottom: none;
-}
-
-/* Ячейки */
-.td {
-  padding: var(--spacing-md);
-  font-size: 0.875rem;
-  color: var(--color-text);
-}
-
-/* Колонка типа операции */
-.typeCell {
+/* Стили списка транзакций */
+.list {
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: var(--spacing-sm);
 }
 
-/* Иконка типа операции */
-.typeIcon {
-  width: 2rem;
-  height: 2rem;
-  border-radius: var(--radius-sm);
+.transaction {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+  background-color: var(--color-bg);
+  border-radius: var(--radius-md);
+  transition: all 0.2s ease;
+}
+
+.transaction:hover {
+  background-color: var(--color-primary-light);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Иконка категории */
+.icon {
+  width: 48px;
+  height: 48px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1rem;
+  border-radius: var(--radius-md);
+  font-size: 24px;
+  flex-shrink: 0;
 }
 
-.typeIconIncome {
-  background-color: rgba(16, 185, 129, 0.1);
-  color: var(--color-success);
+.iconIncome {
+  background-color: var(--color-income-light);
 }
 
-.typeIconExpense {
-  background-color: rgba(239, 68, 68, 0.1);
-  color: var(--color-danger);
+.iconExpense {
+  background-color: var(--color-expense-light);
 }
 
-/* Колонка категории */
-.categoryCell {
-  font-weight: 500;
+/* Информация о транзакции */
+.info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  min-width: 0;
 }
 
-/* Колонка суммы */
-.amountCell {
+.category {
+  font-size: var(--font-size-md);
   font-weight: 600;
-  text-align: right;
-}
-
-.amountIncome {
-  color: var(--color-success);
-}
-
-.amountExpense {
-  color: var(--color-danger);
-}
-
-/* Колонка даты */
-.dateCell {
-  color: var(--color-text-secondary);
-  font-size: 0.875rem;
-}
-
-/* Колонка комментариев */
-.commentCell {
-  color: var(--color-text-secondary);
-  font-size: 0.875rem;
-  max-width: 200px;
+  color: var(--color-text);
+  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.details {
+  display: flex;
+  gap: var(--spacing-sm);
+  align-items: center;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+.date {
   white-space: nowrap;
 }
 
-/* Колонка действий */
-.actionsCell {
-  display: flex;
-  gap: var(--spacing-xs);
-  justify-content: flex-end;
+.comment {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
+}
+
+/* Сумма транзакции */
+.amount {
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  white-space: nowrap;
+  margin-left: auto;
+}
+
+.amountIncome {
+  color: var(--color-income);
+}
+
+.amountExpense {
+  color: var(--color-expense);
 }
 
 /* Кнопки действий */
+.actions {
+  display: flex;
+  gap: var(--spacing-xs);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.transaction:hover .actions {
+  opacity: 1;
+}
+
 .actionButton {
-  padding: var(--spacing-xs) var(--spacing-sm);
-  background-color: transparent;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  font-size: 0.875rem;
-  cursor: pointer;
-  transition: all 0.2s;
-  color: var(--color-text-secondary);
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-md);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-lg);
+  transition: all 0.2s ease;
 }
 
 .actionButton:hover {
-  background-color: var(--color-bg);
+  background-color: var(--color-surface);
   color: var(--color-text);
-  border-color: var(--color-text-secondary);
 }
 
-.deleteButton {
-  color: var(--color-danger);
-  border-color: var(--color-danger);
+.actionButtonDelete:hover {
+  background-color: var(--color-expense-light);
+  color: var(--color-expense);
 }
 
-.deleteButton:hover {
-  background-color: rgba(239, 68, 68, 0.1);
-  color: var(--color-danger);
-  border-color: var(--color-danger);
-}
-
-/* Адаптивность для мобильных */
-@media (max-width: 768px) {
-  .thead {
-    display: none;
-  }
-
-  .tr {
-    display: flex;
-    flex-direction: column;
-    padding: var(--spacing-md);
+/* Адаптивность для мобильных устройств */
+@media (max-width: 640px) {
+  .transaction {
+    flex-wrap: wrap;
     gap: var(--spacing-sm);
   }
 
-  .td {
-    padding: 0;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+  .icon {
+    width: 40px;
+    height: 40px;
+    font-size: 20px;
   }
 
-  .td::before {
-    content: attr(data-label);
-    font-weight: 600;
-    color: var(--color-text-secondary);
-    font-size: 0.75rem;
-    text-transform: uppercase;
+  .info {
+    flex: 1;
+    min-width: 0;
   }
 
-  .amountCell {
+  .amount {
+    width: 100%;
     text-align: right;
+    margin-left: 0;
+    padding-top: var(--spacing-xs);
+    border-top: 1px solid var(--color-border);
   }
 
-  .actionsCell {
-    justify-content: flex-start;
-    margin-top: var(--spacing-sm);
+  .actions {
+    opacity: 1;
+    width: 100%;
+    justify-content: flex-end;
+  }
+
+  .comment {
+    max-width: 150px;
   }
 }
